@@ -1,0 +1,20 @@
+[user]
+	name = Alex Gravem
+	email = kartesus@gmail.com
+
+[alias]
+	a = add -A .
+	b = branch -vv
+	c = commit -am --allow-empty-message
+	ca = commit -a --amend --no-edit
+	cb = checkout --track -b
+	co = checkout
+	ft = fetch origin trunk:trunk
+	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches
+	smart = !git smartcommit && git squashrebase
+	smartcommit = !git add -A . && git commit -am '' --allow-empty-message
+	squash = !git reset --soft $(git merge-base HEAD main) && git commit -am '' --allow-empty-message
+	squashrebase = !git squash && git fetch origin main:main && git rebase main
+
+[pull]
+	rebase = true

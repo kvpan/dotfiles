@@ -1,0 +1,19 @@
+Software that's assumed to be installed:
+- Zsh
+- Emacs
+
+** Fonts
+
+Custom fonts are installed in =~/.local/share/fonts=. For Linux this is enough, but for in MacOS it will be necessary
+to install fonts using FontBook
+
+Other fonts assumed to be installed are the following Nerd Fonts:
+- D2Coding
+- Hermit
+- Iosevka
+- Iosevka Term
+- JetBrainsMono
+- Monoid
+- Overpass
+- VictorMono
+- ZedMono
