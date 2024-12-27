@@ -1,0 +1,5 @@
+.DS_Store
+.config/emacs/eln-cache
+.config/emacs/elpa
+.config/emacs/history
+.config/emacs/auto-save-list
