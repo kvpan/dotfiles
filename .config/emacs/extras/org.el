@@ -54,6 +54,9 @@
   (setq org-enforce-todo-dependencies t)
   (setq org-enforce-todo-checkbox-dependencies t)
   (setq org-agenda-dim-blocked-tasks t)
+
+  ;; Babel
+  (setq org-confirm-babel-evaluate nil)
   
   (setq org-capture-templates
         '(("c" "Default Capture" entry (file "inbox.org")

@@ -53,20 +53,21 @@
 
 * Basic settings
 ** Better defaults
-#+begin_src emacs-lisp
-  (setq gc-cons-threshold (or bedrock--initial-gc-threshold 800000))
-  
-  (setopt inhibit-splash-screen t)
-  (setopt initial-major-mode 'emacs-lisp-mode)
-  (setopt display-time-default-load-average nil)
-  (setopt sentence-end-double-space nil)
-  (setopt make-backup-file nil)
-  (setopt auto-save-default nil)
+#+begin_src emacs-lisp :results silent
+(setq gc-cons-threshold (or bedrock--initial-gc-threshold 800000))
+
+(setopt inhibit-splash-screen t)
+(setopt initial-major-mode 'emacs-lisp-mode)
+(setopt display-time-default-load-average nil)
+(setopt sentence-end-double-space nil)
+(setopt make-backup-file nil)
+(setopt auto-save-default nil)
+(setopt ring-bell-function 'ignore)
 #+end_src
 
 Automatically re-read from disk if the underlying file changes
 Some systems don't do file notifications well; see https://todo.sr.ht/~ashton314/emacs-bedrock/11
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results silent
   (setopt auto-revert-avoid-polling t)
   (setopt auto-revert-interval 5)
   (setopt auto-revert-check-vc-info t)
@@ -74,7 +75,7 @@ Some systems don't do file notifications well; see https://todo.sr.ht/~ashton314
 #+end_src
 
 Save minibuffer history
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results silent
   (savehist-mode)
 #+end_src
 
@@ -150,6 +151,27 @@ Fonts
   (set-face-attribute 'org-checkbox nil        :inherit 'fixed-pitch)
 #+end_src
 
+Ligatures
+#+begin_src emacs-lisp
+(use-package ligature
+  :ensure t
+  :config
+  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+                                       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+                                       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+                                       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+                                       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+                                       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+                                       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+                                       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+                                       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+                                       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+                                       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+                                       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+                                       "\\\\" "://"))
+  (global-ligature-mode t))
+#+end_src
+
 ** Discovery
 
 #+begin_src emacs-lips
@@ -161,7 +183,7 @@ Fonts
 ** Minibuffer
 *** Completion options
 For help, see: https://www.masteringemacs.org/article/understanding-minibuffer-completion
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results silentx
 (setopt enable-recursive-minibuffers t)
 (setopt completion-cycle-threshold 1)
 (setopt completaions-detailed t)
@@ -191,7 +213,7 @@ In particular, many users may find `consult-line' to be more useful to them
 than isearch, so binding this to `C-s' might make sense. This is left to the
 user to configure, however, as isearch and consult-line are not equivalent
 .
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results silent
 (use-package consult
   :ensure t
   :bind (
@@ -212,7 +234,6 @@ user to configure, however, as isearch and consult-line are not equivalent
          ("M-s L" . consult-line-multi)      ; needed by consult-line to detect isearch
          )
   :config
-  ;; Narrowing lets you restrict results to certain groups of candidates
   (setq consult-narrow-key "<"))
 
 (use-package embark
@@ -237,70 +258,23 @@ user to configure, however, as isearch and consult-line are not equivalent
 
 (use-package embark-consult :ensure t)
 #+end_src
+
 *** Vertico
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results silent
 (use-package vertico
   :ensure t
-  :init
-  ;; You'll want to make sure that e.g. fido-mode isn't enabled
-  (vertico-mode))
+  :init (vertico-mode))
 
 (use-package vertico-directory
   :ensure nil
   :after vertico
-  :bind (:map vertico-map
-              ("M-DEL" . vertico-directory-delete-word)))
+  :bind
+  (:map vertico-map
+        ("M-DEL" . vertico-directory-delete-word)))
 
-;; Marginalia: annotations for minibuffer
 (use-package marginalia
   :ensure t
-  :config
-  (marginalia-mode))
-
-;; Popup completion-at-point
-(use-package corfu
-  :ensure t
-  :init
-  (global-corfu-mode)
-  :bind
-  (:map corfu-map
-        ("SPC" . corfu-insert-separator)
-        ("C-n" . corfu-next)
-        ("C-p" . corfu-previous)))
-
-;; Part of corfu
-(use-package corfu-popupinfo
-  :after corfu
-  :ensure nil
-  :hook (corfu-mode . corfu-popupinfo-mode)
-  :custom
-  (corfu-popupinfo-delay '(0.25 . 0.1))
-  (corfu-popupinfo-hide nil)
-  :config
-  (corfu-popupinfo-mode))
-
-;; Make corfu popup come up in terminal overlay
-(use-package corfu-terminal
-  :if (not (display-graphic-p))
-  :ensure t
-  :config
-  (corfu-terminal-mode))
-
-;; Fancy completion-at-point functions; there's too much in the cape package to
-;; configure here; dive in when you're comfortable!
-(use-package cape
-  :ensure t
-  :init
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file))
-
-;; Pretty icons for corfu
-(use-package kind-icon
-  :if (display-graphic-p)
-  :ensure t
-  :after corfu
-  :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+  :config (marginalia-mode))
 #+end_src
 ** Terminal
 #+begin_src emacs-lisp
@@ -310,7 +284,7 @@ user to configure, however, as isearch and consult-line are not equivalent
     ;; Something funny is going on with how Eshell sets up its keymaps; this is
     ;; a work-around to make C-r bound in the keymap
     (keymap-set eshell-mode-map "C-r" 'consult-history))
-  :hook ((eshell-mode . bedrock/setup-eshell)))
+  :hook ((eshell-mode-hook . bedrock/setup-eshell)))
 
 ;; Eat: Emulate A Terminal
 (use-package eat
@@ -427,9 +401,60 @@ user to configure, however, as isearch and consult-line are not equivalent
 (defun k/openai-token () (k/llm-api-token-for "api.openapi.com"))
 #+end_src
 
+* Development
+** Treesitter
+#+begin_src emacs-lisp
+(use-package emacs
+  :hook
+  ((prog-mode-hook . electric-pair-mode))
+  :config    
+  (setq major-mode-remap-alist
+      '((yaml-mode . yaml-ts-mode)
+        (bash-mode . bash-ts-mode)
+        (js2-mode . js-ts-mode)
+        (typescript-mode . typescript-ts-mode)
+        (json-mode . json-ts-mode)
+        (css-mode . css-ts-mode)
+        (python-mode . python-ts-mode))))
+#+end_src
+
+** Magit
+#+begin_src emacs-lisp
+(use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status)))
+#+end_src
+
+** Eglot
+#+begin_src emacs-lisp
+(use-package eglot
+  ; :hook
+  ; (((puython-mode-hook ruby-mode-hook elixir-mode-hook) . eglot))
+  :custom
+  (eglot-send-changes-idle-time 0.1)
+  (eglot-extend-to-xref t) ;; activate eglot in referenced non-project files
+  :config
+  (fset #'jsonrpc--log-event #'ignore)
+  ; (add-to-list 'eglot-server-programs
+  ;              '(haskell-mode . ("haskell-language-server-wraper" "--lsp")))
+  )
+#+end_src
+
+** Racket
+#+begin_src emacs-lisp :results silent
+(use-package racket-mode
+  :ensure t
+  :defer t)
+
+(use-package ob-racket
+  :after racket-mode
+  :load-path "~/code/emacs/ob-racket"
+  :config
+  (add-to-list 'org-babel-load-languages '(racket . t)))
+#+end_src
+
 * Customizations
 #+begin_src emacs-lisp
-  (load-file (expand-file-name "extras/dev.el" user-emacs-directory))
   (load-file (expand-file-name "extras/org.el" user-emacs-directory))
 #+end_src
 

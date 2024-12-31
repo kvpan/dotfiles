@@ -1,10 +1,11 @@
 .DS_Store
-.config/emacs/eln-cache
-.config/emacs/elpa
-.config/emacs/history
-.config/emacs/auto-save-list
 .config/emacs/.cache
 .config/emacs/.org-id-locations
+.config/emacs/auto-save-list
 .config/emacs/bookmarks
-.config/emacs/transient
+.config/emacs/eln-cache
+.config/emacs/elpa
 .config/emacs/emacs.el
+.config/emacs/history
+.config/emacs/tramp
+.config/emacs/transient
