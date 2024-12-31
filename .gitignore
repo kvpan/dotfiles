@@ -3,3 +3,8 @@
 .config/emacs/elpa
 .config/emacs/history
 .config/emacs/auto-save-list
+.config/emacs/.cache
+.config/emacs/.org-id-locations
+.config/emacs/bookmarks
+.config/emacs/transient
+.config/emacs/emacs.el

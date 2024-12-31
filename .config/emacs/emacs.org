@@ -1,0 +1,435 @@
+#+TITLE: Emacs config
+#+STARTUP: show2levels
+
+* Package management
+** Package.el
+#+begin_src emacs-lisp
+(with-eval-after-load 'package
+  (add-to-list 'package-archives '("gnu"   . "https://elpa.gnu.org/packages/") t)
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+  (add-to-list 'package-archives '("org"   . "http://orgmode.org/elpa/") t))
+#+end_src
+
+** Use Package
+- init :: Guarantees config is set before loading the package
+- config :: Runs the code after the package has been loaded
+- bind :: defers configuration until the keybind is used
+  #+begin_src
+  ("C-c n n" . denote)
+  (:map global-map
+    ("C-c n n" . denote))
+  (("C-c n n" . denote)
+   ("C-c n x" . conote))
+  #+end_src
+- hook :: defers configuration until hook is triggered
+  #+begin_src
+  (dired-mode-hook . nerd-icons-dired-mode)
+  #+end_src
+- commands :: defers configuration until command is executed
+  #+begin_src
+  (bookmark-set bookmark-jump bookmark-bmenu-list)
+  #+end_src
+- defer :: defer configuration for n seconds of inactivity or until package loads itself
+- demand :: disable deferring and force package configuration even if bind/hook/etc are set up
+- load-path :: instead of installing from package.el, load from disk
+- after :: set dependencies that will be also deferred
+  #+begin_src
+  ;; when dependency is not strict, use `with-eval-after-load` on :config
+  (use-package register
+      :config
+      (with-eval-after-load 'savehist
+          (add-to-list 'savehist-additional-variables 'register-alist)))
+  #+end_src
+  
+#+begin_src emacs-lisp
+(setq use-package-always-ensure t)
+(setq use-package-hook-name-prefix nil)
+#+end_src
+
+** Local packages
+#+begin_src emacs-lisp
+(add-to-list 'load-path (expand-file-name "~/code/emacs/"))
+#+end_src
+
+* Basic settings
+** Better defaults
+#+begin_src emacs-lisp
+  (setq gc-cons-threshold (or bedrock--initial-gc-threshold 800000))
+  
+  (setopt inhibit-splash-screen t)
+  (setopt initial-major-mode 'emacs-lisp-mode)
+  (setopt display-time-default-load-average nil)
+  (setopt sentence-end-double-space nil)
+  (setopt make-backup-file nil)
+  (setopt auto-save-default nil)
+#+end_src
+
+Automatically re-read from disk if the underlying file changes
+Some systems don't do file notifications well; see https://todo.sr.ht/~ashton314/emacs-bedrock/11
+#+begin_src emacs-lisp
+  (setopt auto-revert-avoid-polling t)
+  (setopt auto-revert-interval 5)
+  (setopt auto-revert-check-vc-info t)
+  (global-auto-revert-mode)
+#+end_src
+
+Save minibuffer history
+#+begin_src emacs-lisp
+  (savehist-mode)
+#+end_src
+
+** Search
+#+begin_src emacs-lisp
+  (use-package isearch
+    :config
+    (setq search-whitespace-regexp ".*")
+    (setq isearch-lax-whitespace t)
+    (setq isearch-regexp-lax-whitespace nil))
+#+end_src
+
+** UI
+#+begin_src emacs-lisp
+  (setopt line-number-mode t)
+  (setopt column-number-mode t)
+  (setopt x-underline-at-descent-line nil)
+  (setopt switch-to-buffer-obey-display-actions t)
+  (setopt show-trailing-whitespace nil)
+  (setopt indicate-buffer-boundaries '((top . left) (bottom . right)))
+  (setopt mouse-wheel-tilt-scroll t)
+  (setopt mouse-wheel-flip-direction t)
+  (setopt indent-tabs-mode nil)
+  (setopt tab-width 4)
+
+  (blink-cursor-mode t)
+  (pixel-scroll-precision-mode)
+  (global-display-line-numbers-mode -1)
+  (add-hook 'text-mode-hook 'visual-line-mode)
+
+  (setq global-hl-line-modes nil)
+#+end_src
+
+** Theme
+Normal way
+#+begin_src
+(use-package emacs
+  :config
+  (load-theme 'modus-vivendi))
+#+end_src
+
+Stimmung
+#+begin_src emacs-lisp
+  (use-package stimmung-themes
+    :demand t
+    :config
+    (stimmung-themes-load-light))
+#+end_src
+
+Fonts
+#+begin_src emacs-lisp
+(set-face-attribute 'default        nil :family "D2CodingLigature Nerd Font"  :height 160 :weight 'normal)
+(set-face-attribute 'fixed-pitch    nil :family "D2CodingLigature Nerd Font"  :height 160 :weight 'normal)
+(set-face-attribute 'variable-pitch nil :family "Rec Mono Casual" :height 160 :weight 'normal)
+
+(require 'org)
+(dolist (face '((org-level-1 . 1.25)
+                        (org-level-2 . 1.2)
+                        (org-level-3 . 1.15)
+                        (org-level-4 . 1.1)
+                        (org-level-5 . 1.1)
+                        (org-level-6 . 1.1)
+                        (org-level-7 . 1.1)
+                        (org-level-8 . 1.1)))
+  (set-face-attribute (car face) nil :font "OverpassM Nerd Font Mono" :weight 'bold :height (cdr face)))
+
+  (set-face-attribute 'org-document-title nil  :font "OverpassM Nerd Font Mono" :weight 'bold :height 1.4)
+  (set-face-attribute 'org-block nil           :foreground nil :inherit 'fixed-pitch :height 0.85)
+  (set-face-attribute 'org-code nil            :inherit '(shadow fixed-pitch) :height 0.85)
+  (set-face-attribute 'org-verbatim nil        :inherit '(shadow fixed-pitch) :height 0.85)
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil       :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil        :inherit 'fixed-pitch)
+#+end_src
+
+** Discovery
+
+#+begin_src emacs-lips
+(use-package which-key
+  :config
+  (which-key-mode))
+#+end_src
+
+** Minibuffer
+*** Completion options
+For help, see: https://www.masteringemacs.org/article/understanding-minibuffer-completion
+#+begin_src emacs-lisp
+(setopt enable-recursive-minibuffers t)
+(setopt completion-cycle-threshold 1)
+(setopt completaions-detailed t)
+(setopt tab-always-indent 'complete)
+(setopt completion-styles '(basic initials substring))
+(setopt completion-auto-help 'always)
+(setopt completions-max-height 20)
+(setopt completions-format 'one-column)
+(setopt completions-group t)
+(setopt completion-auto-select 'second-tab)
+
+(keymap-set minibuffer-mode-map "TAB" 'minibuffer-complete)
+
+(use-package wgrep
+  :ensure t
+  :config (setq wgrep-auto-save-buffer t))
+#+end_src
+
+*** Consult
+The consult package in particular has a vast number of functions that you
+can use as replacements to what Emacs provides by default. Please see the
+consult documentation for more information and help:
+
+https://github.com/minad/consult
+
+In particular, many users may find `consult-line' to be more useful to them
+than isearch, so binding this to `C-s' might make sense. This is left to the
+user to configure, however, as isearch and consult-line are not equivalent
+.
+#+begin_src emacs-lisp
+(use-package consult
+  :ensure t
+  :bind (
+         ;; Drop-in replacements
+         ("C-x b" . consult-buffer)     ; orig. switch-to-buffer
+         ("M-y"   . consult-yank-pop)   ; orig. yank-pop
+         ;; Searching
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)       ; Alternative: rebind C-s to use
+         ("M-s s" . consult-line)       ; consult-line instead of isearch, bind
+         ("M-s L" . consult-line-multi) ; isearch to M-s s
+         ("M-s o" . consult-outline)
+         ;; Isearch integration
+         :map isearch-mode-map
+         ("M-e" . consult-isearch-history)   ; orig. isearch-edit-string
+         ("M-s e" . consult-isearch-history) ; orig. isearch-edit-string
+         ("M-s l" . consult-line)            ; needed by consult-line to detect isearch
+         ("M-s L" . consult-line-multi)      ; needed by consult-line to detect isearch
+         )
+  :config
+  ;; Narrowing lets you restrict results to certain groups of candidates
+  (setq consult-narrow-key "<"))
+
+(use-package embark
+  :ensure t
+  :demand t
+  :after avy
+  :bind (("C-c a" . embark-act))        ; bind this to an easy key to hit
+  :init
+  ;; Add the option to run embark when using avy
+  (defun bedrock/avy-action-embark (pt)
+    (unwind-protect
+        (save-excursion
+          (goto-char pt)
+          (embark-act))
+      (select-window
+       (cdr (ring-ref avy-ring 0))))
+    t)
+
+  ;; After invoking avy-goto-char-timer, hit "." to run embark at the next
+  ;; candidate you select
+  (setf (alist-get ?. avy-dispatch-alist) 'bedrock/avy-action-embark))
+
+(use-package embark-consult :ensure t)
+#+end_src
+*** Vertico
+#+begin_src emacs-lisp
+(use-package vertico
+  :ensure t
+  :init
+  ;; You'll want to make sure that e.g. fido-mode isn't enabled
+  (vertico-mode))
+
+(use-package vertico-directory
+  :ensure nil
+  :after vertico
+  :bind (:map vertico-map
+              ("M-DEL" . vertico-directory-delete-word)))
+
+;; Marginalia: annotations for minibuffer
+(use-package marginalia
+  :ensure t
+  :config
+  (marginalia-mode))
+
+;; Popup completion-at-point
+(use-package corfu
+  :ensure t
+  :init
+  (global-corfu-mode)
+  :bind
+  (:map corfu-map
+        ("SPC" . corfu-insert-separator)
+        ("C-n" . corfu-next)
+        ("C-p" . corfu-previous)))
+
+;; Part of corfu
+(use-package corfu-popupinfo
+  :after corfu
+  :ensure nil
+  :hook (corfu-mode . corfu-popupinfo-mode)
+  :custom
+  (corfu-popupinfo-delay '(0.25 . 0.1))
+  (corfu-popupinfo-hide nil)
+  :config
+  (corfu-popupinfo-mode))
+
+;; Make corfu popup come up in terminal overlay
+(use-package corfu-terminal
+  :if (not (display-graphic-p))
+  :ensure t
+  :config
+  (corfu-terminal-mode))
+
+;; Fancy completion-at-point functions; there's too much in the cape package to
+;; configure here; dive in when you're comfortable!
+(use-package cape
+  :ensure t
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file))
+
+;; Pretty icons for corfu
+(use-package kind-icon
+  :if (display-graphic-p)
+  :ensure t
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
+** Terminal
+#+begin_src emacs-lisp
+(use-package eshell
+  :init
+  (defun bedrock/setup-eshell ()
+    ;; Something funny is going on with how Eshell sets up its keymaps; this is
+    ;; a work-around to make C-r bound in the keymap
+    (keymap-set eshell-mode-map "C-r" 'consult-history))
+  :hook ((eshell-mode . bedrock/setup-eshell)))
+
+;; Eat: Emulate A Terminal
+(use-package eat
+  :ensure t
+  :custom
+  (eat-term-name "xterm")
+  :config
+  (eat-eshell-mode)                     ; use Eat to handle term codes in program output
+  (eat-eshell-visual-command-mode))     ; commands like less will be handled by Eat
+
+;; Orderless: powerful completion style
+(use-package orderless
+  :ensure t
+  :config
+  (setq completion-styles '(orderless)))
+#+end_src
+
+* Motion
+#+begin_src emacs-lisp
+(use-package avy
+  :ensure t
+  :demand t
+  :bind   (("C-c j" . avy-goto-line)))
+#+end_src
+** Movement
+- C-a       :: Beginning of line
+- M-m       :: True beginning of line (non-whitespace)
+- C-e       :: End of line
+- C-p       :: Previous line
+- C-f       :: Forward character
+- M-f       :: Forward word
+- C-b       :: Backward character
+- M-b       :: Backward word
+- M-<       :: Beginning of the buffer (sets marker)
+- M->       :: End of buffer (sets marker)
+- C-x ]     :: Forward page
+- C-x [     :: Backward page
+- M-g M-g   :: Go to line
+- C-l       :: Cycle cursor line through viewport
+- M-r       :: Cycle cursor through viewport
+- C-M-p     :: Previous function
+- C-M-n     :: Next function
+- C-M-u     :: Outer block (up)
+- C-M-d     :: Inner block (down)
+- C-<arrow> :: Move through windows
+  #+begin_src emacs-lisp
+  (windmove-default-keybindings 'control)
+   #+end_src
+  
+** Editing
+- C-d           :: Delete next character
+- M-d           :: Delete next word
+- C-k           :: Kill from cursor to end of line
+- C-M-k         :: Kill next s-expr
+- C-<backspace> :: Delete previous word
+- M-i           :: Insert horizontal space
+- M-\           :: Delete horizontal space
+- M-^           :: Join current and previous line
+- M-c           :: Capitalize next word
+- M-u           :: Uppercase next word
+- M-l           :: Lowercase next word
+- C-x C-;       :: Comment the current line
+- M-;           :: Comment region
+- C-x z         :: Repeat the last command
+- C-x h :: Highlight the entire buffer
+- C-M-\ :: Indents region
+- M-SPC         :: Cycle spacing
+  #+begin_src emacs-lisp
+  (global-set-key (kbd "M-SPC") 'cycle-spacing)
+  #+end_src
+- M-o :: Delete blank lines
+  #+begin_src emacs-lisp
+  (global-unset-key (kbd "C-x C-o"))
+  (global-set-key (kbd "M-o") 'delete-blank-lines)
+  #+end_src
+- M-<up> :: Move line up
+  #+begin_src emacs-lisp
+  (defun k/move-line-up ()
+    (interactive)
+    (transpose-lines 1)
+    (forward-line -2))
+  (global-set-key (kbd "M-<up>") 'k/move-line-up)
+  #+end_src
+- M-<down> :: Move line down
+#+begin_src emacs-lisp
+(defun k/move-line-down ()
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1))
+(global-set-key (kbd "M-<down>") 'k/move-line-down)
+#+end_src
+
+* AI
+#+begin_src emacs-lisp
+(use-package gptel
+  :ensure 
+  :config
+  (setq gptel-api-key         'k/openai-token)
+  (setq gptel-default-mode    'org-mode)
+  (setq gptel-expert-commands t)
+   
+  (add-hook 'gptel-post-response-functions 'gptel-end-of-response)
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll))
+
+(defun k/llm-api-token-for (host)
+  (let ((credentials (auth-source-search :host host :user "token")))
+    (when credentials
+        (let ((secret (plist-get (car credentials) :secret)))
+          (if (functionp secret)
+              (funcall secret)
+            secret)))))
+
+(defun k/openai-token () (k/llm-api-token-for "api.openapi.com"))
+#+end_src
+
+* Customizations
+#+begin_src emacs-lisp
+  (load-file (expand-file-name "extras/dev.el" user-emacs-directory))
+  (load-file (expand-file-name "extras/org.el" user-emacs-directory))
+#+end_src
+
