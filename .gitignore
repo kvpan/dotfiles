@@ -9,3 +9,5 @@
 .config/emacs/history
 .config/emacs/tramp
 .config/emacs/transient
+.config/emacs/.local
+.config/zsh/extras.zsh

@@ -122,6 +122,7 @@ Stimmung
 (use-package stimmung-themes
   :demand t
   :ensure t
+  :load-path "~/code/stimmung-themes"
   :config (stimmung-themes-load-light))
 #+end_src
 
