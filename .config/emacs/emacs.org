@@ -119,17 +119,20 @@ Normal way
 
 Stimmung
 #+begin_src emacs-lisp
-  (use-package stimmung-themes
-    :demand t
-    :config
-    (stimmung-themes-load-light))
+(use-package stimmung-themes
+  :demand t
+  :ensure t
+  :config (stimmung-themes-load-light))
 #+end_src
+
+#+RESULTS:
+: t
 
 Fonts
 #+begin_src emacs-lisp
 (set-face-attribute 'default        nil :family "D2CodingLigature Nerd Font"  :height 160 :weight 'normal)
 (set-face-attribute 'fixed-pitch    nil :family "D2CodingLigature Nerd Font"  :height 160 :weight 'normal)
-(set-face-attribute 'variable-pitch nil :family "Rec Mono Casual" :height 160 :weight 'normal)
+(set-face-attribute 'variable-pitch nil :family "Rec Mono Casual Nerd Font" :height 160 :weight 'normal)
 
 (require 'org)
 (dolist (face '((org-level-1 . 1.25)
@@ -150,6 +153,8 @@ Fonts
   (set-face-attribute 'org-meta-line nil       :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-checkbox nil        :inherit 'fixed-pitch)
 #+end_src
+
+#+RESULTS:
 
 Ligatures
 #+begin_src emacs-lisp
