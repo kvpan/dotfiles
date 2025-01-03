@@ -14,3 +14,5 @@ source ~/.config/zsh/p10k.zsh
 PATH="$HOME/.local/bin:$PATH"
 
 [ -f ~/.config/zsh/extras.zsh ] && source ~/.config/zsh/extras.zsh
+
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
